@@ -3,6 +3,7 @@
 public class RayTracingMaster : MonoBehaviour
 {
     public ComputeShader RayTracingShader;
+    public Texture SkyboxTexture;
 
     private RenderTexture _target;
     private Camera _camera;
@@ -18,6 +19,7 @@ public class RayTracingMaster : MonoBehaviour
     {
         RayTracingShader.SetMatrix(name: "_CameraToWorld", val: _camera.cameraToWorldMatrix);
         RayTracingShader.SetMatrix(name: "_CameraInverseProjection", val: _camera.projectionMatrix.inverse);
+        RayTracingShader.SetTexture(kernelIndex: 0, name: "_SkyboxTexture", texture: SkyboxTexture);
     }
 
     private void Awake()

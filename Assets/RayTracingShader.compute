@@ -6,6 +6,10 @@
 RWTexture2D<float4> Result;
 float4x4 _CameraToWorld;
 float4x4 _CameraInverseProjection;
+// New skybo texture from HDRI
+Texture2D<float4> _SkyboxTexture;
+SamplerState sampler_SkyboxTexture;
+static const float PI = 3.14159265f;
 
 struct Ray
 {
@@ -49,6 +53,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // Get ray of UVs
     Ray ray = CreateCameraRay(uv);
 
-    // Write colors
-    Result[id.xy] = float4(ray.direction * 0.5f + 0.5f, 1.0f);
+    // Transform cartesian direction vector to spherical coordinates 
+    float theta = acos(ray.direction.y) / -PI;
+    float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    Result[id.xy] = _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
 }
