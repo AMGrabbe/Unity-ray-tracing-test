@@ -3,7 +3,9 @@ guid: 1e409bf89859d5642b373927e1a69f5c
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - RayTracingShader: {fileID: 7200000, guid: b3fa54f3459730641b3a825aea50de9f, type: 3}
+  - SkyboxTexture: {fileID: 8900000, guid: 5d767754721fb5643985f3ba4937de76, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

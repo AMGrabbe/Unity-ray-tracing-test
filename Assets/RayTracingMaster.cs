@@ -3,7 +3,7 @@
 public class RayTracingMaster : MonoBehaviour
 {
     public ComputeShader RayTracingShader;
-    public Texture SkyboxTexture;
+    public Texture2D SkyboxTexture;
 
     private RenderTexture _target;
     private Camera _camera;
