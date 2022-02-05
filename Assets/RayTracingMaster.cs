@@ -9,6 +9,9 @@ public class RayTracingMaster : MonoBehaviour
     private Camera _camera;
     private int kernel;
 
+    private uint _currentSample = 0;
+    private Material _addMaterial;
+
     // MonoBehaviour.OnRenderImage: clled after camera finishes rendering, allows modification of final image
     // Documentation: https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnRenderImage.html
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -21,6 +24,7 @@ public class RayTracingMaster : MonoBehaviour
         RayTracingShader.SetMatrix(name: "_CameraToWorld", val: _camera.cameraToWorldMatrix);
         RayTracingShader.SetMatrix(name: "_CameraInverseProjection", val: _camera.projectionMatrix.inverse);
         RayTracingShader.SetTexture(kernelIndex: 0, name: "_SkyboxTexture", texture: SkyboxTexture);
+        RayTracingShader.SetVector("_PixelOffset", new Vector2(Random.value, Random.value));
     }
 
     private void Awake()
@@ -28,6 +32,22 @@ public class RayTracingMaster : MonoBehaviour
         _camera = GetComponent<Camera>(); 
         kernel = RayTracingShader.FindKernel("CSMain");
         SetShaderParameters();
+    }
+
+    void Update()
+    {
+        if(transform.hasChanged)
+        {
+            _currentSample = 0;
+            transform.hasChanged = false;
+        }
+
+            _target =
+            new RenderTexture(Screen.width,
+                Screen.height,
+                depth: 0,
+                format: RenderTextureFormat.ARGBFloat,
+                readWrite: RenderTextureReadWrite.Linear);
     }
 
     private void Render(RenderTexture destination)
@@ -42,10 +62,15 @@ public class RayTracingMaster : MonoBehaviour
          // [numthreads(8,8,1)], so we’ll stick to that and spawn one thread group per 8×8 pixels
         RayTracingShader.Dispatch(kernel, threadGroupsX, threadGroupsY, threadGroupsZ: 1);
 
-        
-
+        if (_addMaterial == null)
+        {
+            _addMaterial = new Material(Shader.Find("Hidden/AddShader"));
+        }
+        // Inform shader about current sample.
+        _addMaterial.SetFloat("_Sample", _currentSample);
         // Draw result to screen
         Graphics.Blit(_target, destination);
+        _currentSample++;
     }
 
     // Create target with appropriate dimensions
@@ -59,7 +84,7 @@ public class RayTracingMaster : MonoBehaviour
             new RenderTexture(Screen.width,
                 Screen.height,
                 depth: 0,
-                format: RenderTextureFormat.ARGB32,
+                format: RenderTextureFormat.ARGBFloat,
                 readWrite: RenderTextureReadWrite.Linear);
         // Output textures need random write flag enabled
         _target.enableRandomWrite = true;
