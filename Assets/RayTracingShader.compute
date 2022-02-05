@@ -94,13 +94,14 @@ void IntersectSphere(Ray ray, inout RayIntersection bestHit, float4 sphere)
 RayIntersection Trace(Ray ray)
 {
     RayIntersection bestHit = CreateRayIntersection();
-    //IntersectGroundPlane(ray, bestHit);
+    IntersectGroundPlane(ray, bestHit);
     IntersectSphere(ray, bestHit, float4(-0.9, -2, 3.7, 1));
     return bestHit;
 }
 
-float Shade(inout Ray ray, RayIntersection hit, uint3 id)
+float3 Shade(inout Ray ray, RayIntersection hit, uint3 id)
 {
+    // TODO: distance always too small, produces grayscale image. Needs fix.
     if(hit.distance < 1.#INF)
     {
         return hit.normal * 0.5f + 0.5f;
@@ -112,7 +113,7 @@ float Shade(inout Ray ray, RayIntersection hit, uint3 id)
         // https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
         float theta = acos(ray.direction.y) / -PI;
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
-        return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
+        return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
     }
 }
 

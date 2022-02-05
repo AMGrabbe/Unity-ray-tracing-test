@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class RayTracingMaster : MonoBehaviour
 {
@@ -41,13 +41,7 @@ public class RayTracingMaster : MonoBehaviour
             _currentSample = 0;
             transform.hasChanged = false;
         }
-
-            _target =
-            new RenderTexture(Screen.width,
-                Screen.height,
-                depth: 0,
-                format: RenderTextureFormat.ARGBFloat,
-                readWrite: RenderTextureReadWrite.Linear);
+        
     }
 
     private void Render(RenderTexture destination)
