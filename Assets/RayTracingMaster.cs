@@ -27,6 +27,7 @@ public class RayTracingMaster : MonoBehaviour
     {
         _camera = GetComponent<Camera>(); 
         kernel = RayTracingShader.FindKernel("CSMain");
+        SetShaderParameters();
     }
 
     private void Render(RenderTexture destination)
@@ -41,7 +42,7 @@ public class RayTracingMaster : MonoBehaviour
          // [numthreads(8,8,1)], so we’ll stick to that and spawn one thread group per 8×8 pixels
         RayTracingShader.Dispatch(kernel, threadGroupsX, threadGroupsY, threadGroupsZ: 1);
 
-        SetShaderParameters();
+        
 
         // Draw result to screen
         Graphics.Blit(_target, destination);
@@ -58,7 +59,7 @@ public class RayTracingMaster : MonoBehaviour
             new RenderTexture(Screen.width,
                 Screen.height,
                 depth: 0,
-                format: RenderTextureFormat.ARGBFloat,
+                format: RenderTextureFormat.ARGB32,
                 readWrite: RenderTextureReadWrite.Linear);
         // Output textures need random write flag enabled
         _target.enableRandomWrite = true;
