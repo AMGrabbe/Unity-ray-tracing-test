@@ -7,6 +7,7 @@ public class RayTracingMaster : MonoBehaviour
 
     private RenderTexture _target;
     private Camera _camera;
+    private int kernel;
 
     // MonoBehaviour.OnRenderImage: clled after camera finishes rendering, allows modification of final image
     // Documentation: https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnRenderImage.html
@@ -25,19 +26,20 @@ public class RayTracingMaster : MonoBehaviour
     private void Awake()
     {
         _camera = GetComponent<Camera>(); 
+        kernel = RayTracingShader.FindKernel("CSMain");
     }
 
     private void Render(RenderTexture destination)
     {
         InitRenderTexture();
 
-        RayTracingShader.SetTexture(kernelIndex: 0, name: "Result", _target);
+        RayTracingShader.SetTexture(kernel, name: "Result", _target);
         var threadGroupsX = Mathf.CeilToInt(Screen.width / 8.0f);
         var threadGroupsY = Mathf.CeilToInt(Screen.height / 8.0f);
         // Execute ComputeShader, spawn one thread per pixel of the render target
         // The default thread group size as defined in the Unity compute shader template (RayTracingShader.compute) is 
          // [numthreads(8,8,1)], so we’ll stick to that and spawn one thread group per 8×8 pixels
-        RayTracingShader.Dispatch(kernelIndex: 0, threadGroupsX, threadGroupsY, threadGroupsZ: 1);
+        RayTracingShader.Dispatch(kernel, threadGroupsX, threadGroupsY, threadGroupsZ: 1);
 
         SetShaderParameters();
 
