@@ -12,11 +12,11 @@ public class RayTracingMaster : MonoBehaviour
     private uint _currentSample = 0;
     private Material _addMaterial;
 
-    // MonoBehaviour.OnRenderImage: clled after camera finishes rendering, allows modification of final image
+    // MonoBehaviour.OnRenderImage: called after camera finishes rendering, allows modification of camera's final image
     // Documentation: https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnRenderImage.html
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        Render (destination);
+        Render(destination);
     }
 
     private void SetShaderParameters()
@@ -31,7 +31,7 @@ public class RayTracingMaster : MonoBehaviour
     {
         _camera = GetComponent<Camera>(); 
         kernel = RayTracingShader.FindKernel("CSMain");
-        SetShaderParameters();
+        
     }
 
     void Update()
@@ -41,17 +41,12 @@ public class RayTracingMaster : MonoBehaviour
             _currentSample = 0;
             transform.hasChanged = false;
         }
-        
-        if (_addMaterial == null)
-        {
-            _addMaterial = new Material(Shader.Find("Hidden/AddShader"));
-        }
-        // Inform shader about current sample.
-        _addMaterial.SetFloat("_Sample", (float)_currentSample);
+        SetShaderParameters();
     }
 
     private void Render(RenderTexture destination)
     {
+        
         InitRenderTexture();
 
         RayTracingShader.SetTexture(kernel, name: "Result", _target);
@@ -67,7 +62,7 @@ public class RayTracingMaster : MonoBehaviour
             _addMaterial = new Material(Shader.Find("Hidden/AddShader"));
         }
         // Inform shader about current sample.
-        _addMaterial.SetFloat("_Sample", (float)_currentSample);
+        _addMaterial.SetFloat("_Sample", _currentSample);
         // Draw result to screen
         Graphics.Blit(_target, destination, _addMaterial);
         _currentSample++;
