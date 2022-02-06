@@ -70,7 +70,7 @@ public class RayTracingMaster : MonoBehaviour
     // Create target with appropriate dimensions
     private void InitRenderTexture()
     {
-        // TODO: Using TendetTexture.IsCreated
+        // TODO: Using TendetTexture.IsCreated.
         if (_target != null) _target.Release();
 
         // TODO: Try different depth & format values
