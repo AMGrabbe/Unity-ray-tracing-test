@@ -42,6 +42,12 @@ public class RayTracingMaster : MonoBehaviour
             transform.hasChanged = false;
         }
         
+        if (_addMaterial == null)
+        {
+            _addMaterial = new Material(Shader.Find("Hidden/AddShader"));
+        }
+        // Inform shader about current sample.
+        _addMaterial.SetFloat("_Sample", (float)_currentSample);
     }
 
     private void Render(RenderTexture destination)
@@ -61,9 +67,9 @@ public class RayTracingMaster : MonoBehaviour
             _addMaterial = new Material(Shader.Find("Hidden/AddShader"));
         }
         // Inform shader about current sample.
-        _addMaterial.SetFloat("_Sample", _currentSample);
+        _addMaterial.SetFloat("_Sample", (float)_currentSample);
         // Draw result to screen
-        Graphics.Blit(_target, destination);
+        Graphics.Blit(_target, destination, _addMaterial);
         _currentSample++;
     }
 

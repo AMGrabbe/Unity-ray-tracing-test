@@ -8,8 +8,8 @@ Shader "Hidden/AddShader"
     {
         // No culling or depth
         Cull Off ZWrite Off ZTest Always
-        // Enable alpha blending.
-        Blend SrcAlpha OneMinusSrcAlpha 
+        // Enable regular alpha blending for this Pass
+        Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
@@ -45,7 +45,7 @@ Shader "Hidden/AddShader"
             fixed4 frag (v2f i) : SV_Target
             {
                 // This shader will now just draw the first sample with an opacity of 1, 
-                // the next one with 12, then 13 and so on, averaging all samples with equal contribution.
+                // the next one with 1/2, then 1/3 and so on, averaging all samples with equal contribution.
                 return float4(tex2D(_MainTex, i.uv).rgb, 1.0f / (_Sample + 1.0f));
             }
             ENDCG

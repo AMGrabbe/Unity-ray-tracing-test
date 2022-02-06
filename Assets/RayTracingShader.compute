@@ -11,6 +11,8 @@ Texture2D<float4> _SkyboxTexture;
 SamplerState sampler_SkyboxTexture;
 static const float PI = 3.14159265f;
 
+float2 _PixelOffset;
+
 struct Ray
 {
     float3 origin;
@@ -98,7 +100,7 @@ RayIntersection Trace(Ray ray)
 {
     RayIntersection bestHit = CreateRayIntersection();
     //IntersectGroundPlane(ray, bestHit);
-    for (int i = -10; i < 10; i= i+3 ) IntersectSphere(ray, bestHit, float4(i, 0, 7.0f, 1));
+    for (int i = -10; i < 10; i= i+3 ) IntersectSphere(ray, bestHit, float4(i, 0, 6.0f, 1));
     return bestHit;
 }
 
@@ -140,14 +142,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
 
     // Transform pixel to [-1,1] range
-    float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
+    float2 uv = float2((id.xy + _PixelOffset) / float2(width, height) * 2.0f - 1.0f);
 
     // Get ray of UVs
     Ray ray = CreateCameraRay(uv);
     // Trace & shade
     float3 result = float3(0, 0, 0);
     // 8 bounces of the ray.
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 20; i++)
     {
         // Imagine a ray that has been reflected once and lost 3/4 of its energy. 
         // Now it travels on and hits the sky, so we only transfer 1/4 of the energy of the sky hit to the pixel. 
