@@ -98,7 +98,7 @@ RayIntersection Trace(Ray ray)
 {
     RayIntersection bestHit = CreateRayIntersection();
     //IntersectGroundPlane(ray, bestHit);
-    IntersectSphere(ray, bestHit, float4(-0.9, -1, 3.7, 1));
+    for (int i = -10; i < 10; i= i+3 ) IntersectSphere(ray, bestHit, float4(i, 0, 7.0f, 1));
     return bestHit;
 }
 
