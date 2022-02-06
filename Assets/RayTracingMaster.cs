@@ -4,6 +4,7 @@ public class RayTracingMaster : MonoBehaviour
 {
     public ComputeShader RayTracingShader;
     public Texture2D SkyboxTexture;
+    public Light DirectionalLight;
 
     private RenderTexture _target;
     private Camera _camera;
@@ -25,6 +26,12 @@ public class RayTracingMaster : MonoBehaviour
         RayTracingShader.SetMatrix(name: "_CameraInverseProjection", val: _camera.projectionMatrix.inverse);
         RayTracingShader.SetTexture(kernelIndex: 0, name: "_SkyboxTexture", texture: SkyboxTexture);
         RayTracingShader.SetVector("_PixelOffset", new Vector2(Random.value, Random.value));
+        Vector3 lightDirection = DirectionalLight.transform.forward;
+        RayTracingShader.SetVector("_DirectionalLight", 
+            new Vector4(lightDirection.x, 
+                lightDirection.y, 
+                lightDirection.z, 
+                DirectionalLight.intensity));
     }
 
     private void Awake()
@@ -36,11 +43,13 @@ public class RayTracingMaster : MonoBehaviour
 
     void Update()
     {
-        if(transform.hasChanged)
+        if(transform.hasChanged || DirectionalLight.transform.hasChanged)
         {
             _currentSample = 0;
             transform.hasChanged = false;
+            DirectionalLight.transform.hasChanged = false;
         }
+
         SetShaderParameters();
     }
 

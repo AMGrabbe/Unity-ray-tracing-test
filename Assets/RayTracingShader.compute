@@ -12,6 +12,7 @@ SamplerState sampler_SkyboxTexture;
 static const float PI = 3.14159265f;
 
 float2 _PixelOffset;
+float4 _DirectionalLight;
 
 struct Ray
 {
@@ -99,6 +100,7 @@ void IntersectSphere(Ray ray, inout RayIntersection bestHit, float4 sphere)
 RayIntersection Trace(Ray ray)
 {
     RayIntersection bestHit = CreateRayIntersection();
+    // TODO: Ground plane is not visible. Needs fix.
     //IntersectGroundPlane(ray, bestHit);
     for (int i = -10; i < 10; i= i+3 ) IntersectSphere(ray, bestHit, float4(i, 0, 6.0f, 1));
     return bestHit;
@@ -111,13 +113,26 @@ float3 Shade(inout Ray ray, RayIntersection hit, uint3 id)
         // To update the energy, we perform an element-wise multiplication with the specular color of the surface.
         // For example, gold has a specular reflectivity of roughly float3(1.0f, 0.78f, 0.34f), so it will reflect 100% of red light, 78% of green light, but only 34% of blue light, giving the reflection its distinct golden tint.
         // Reflectivity valus: https://blog.selfshadow.com/publications/s2015-shading-course/#course_content
-        float3 specular = float3(0.6f, 0.6f, 0.6f);
+        float3 specular = float3(0.1f, 0.1f, 0.1f);
+        float3 albedo = float3(0.8f, 0.8f, 0.8f);
 
         ray.origin = hit.position + hit.normal + 0.001f;
         ray.direction = reflect(ray.direction, hit.normal);
         ray.energy *= specular;
 
-        return float3(0.0f, 0.0f, 0.0f);
+        // Shadow test ray:  Check if something blocks the way to infinity. If thats true no diffuse light will be used.
+        // Means: Is something behind the camera that block the light? 
+        bool shadow = false;
+        Ray shadowRay = CreateRay(ray.origin, -1 * _DirectionalLight.xyz);
+        RayIntersection shadowHit = Trace(shadowRay);
+        if(shadowHit.distance < 1.#INF) return float3(0.0f, 0.0f, 0.0f);
+
+        // Return diffuse shaded color.
+        // The dot product is defined as a⋅b=||a|| ||b||cosθ. Since both our vectors (the normal and the light direction) are of unit length, 
+        // the dot product is exactly what we are looking for: the cosine of the angle. 
+        // The ray and the light are pointing in opposite directions, so for head-on lighting the dot product returns -1 instead of 1. 
+        // We need to flip the sign to make up for this. Finally, we saturate this value (i.e. clamp it to [0,1] range) to prevent negative energy.
+        return saturate(dot(hit.normal, _DirectionalLight.xyz) * -1) * _DirectionalLight.w * albedo;
     }
     else
     {
@@ -149,7 +164,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // Trace & shade
     float3 result = float3(0, 0, 0);
     // 8 bounces of the ray.
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 8; i++)
     {
         // Imagine a ray that has been reflected once and lost 3/4 of its energy. 
         // Now it travels on and hits the sky, so we only transfer 1/4 of the energy of the sky hit to the pixel. 
