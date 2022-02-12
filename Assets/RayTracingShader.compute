@@ -14,6 +14,15 @@ static const float PI = 3.14159265f;
 float2 _PixelOffset;
 float4 _DirectionalLight;
 
+
+struct Sphere
+{
+    float3 position;
+    float radius;
+    float3 albedo;
+    float3 specular;
+};
+StructuredBuffer<Sphere> _Spheres;
 struct Ray
 {
     float3 origin;
@@ -27,6 +36,9 @@ struct RayIntersection
     float3 position;
     float distance;
     float3 normal;
+      // Color:
+    float3 albedo;
+    float3 specular;
 };
 
 Ray CreateRay (float3 origin, float3 direction)
@@ -74,12 +86,12 @@ void IntersectGroundPlane (Ray ray, inout RayIntersection bestHit)
     }
 }
 
-void IntersectSphere(Ray ray, inout RayIntersection bestHit, float4 sphere)
+void IntersectSphere(Ray ray, inout RayIntersection bestHit, Sphere sphere)
 {
     // Sphere: xzs = position, w = readius
-    float3 distance = ray.origin - sphere.xyz;
+    float3 distance = ray.origin - sphere.position;
     float p1 = -dot(ray.direction, distance);
-    float p2sqr = p1 * p1 - dot(distance, distance) + sphere.w * sphere.w;
+    float p2sqr = p1 * p1 - dot(distance, distance) + sphere.radius * sphere.radius;
 
     if (p2sqr < 0) return;
     
@@ -93,7 +105,9 @@ void IntersectSphere(Ray ray, inout RayIntersection bestHit, float4 sphere)
     {
         bestHit.distance = t;
         bestHit.position = ray.origin + t * ray.direction;
-        bestHit.normal = normalize(bestHit.position - sphere.xyz);
+        bestHit.normal = normalize(bestHit.position - sphere.position);
+        bestHit.albedo = sphere.albedo;
+        bestHit.specular = sphere.specular;
     }
 }
 
@@ -102,7 +116,10 @@ RayIntersection Trace(Ray ray)
     RayIntersection bestHit = CreateRayIntersection();
     // TODO: Ground plane is not visible. Needs fix.
     //IntersectGroundPlane(ray, bestHit);
-    for (int i = -10; i < 10; i= i+3 ) IntersectSphere(ray, bestHit, float4(i, 0, 6.0f, 1));
+    uint numSpheres, stride;
+    // This is the place where the CPU will store all spheres that comprise the scene.
+    _Spheres.GetDimensions(numSpheres, stride);
+    for (uint i = 0; i < numSpheres; i= i++ ) IntersectSphere(ray, bestHit, _Spheres[i]);
     return bestHit;
 }
 

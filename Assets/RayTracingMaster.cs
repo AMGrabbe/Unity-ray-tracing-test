@@ -5,13 +5,16 @@ public class RayTracingMaster : MonoBehaviour
     public ComputeShader RayTracingShader;
     public Texture2D SkyboxTexture;
     public Light DirectionalLight;
+    public Vector2 SphereRadius;
+    public uint SphereMax = 100;
+    public float SperePlacementRadius = 100.0f;
 
     private RenderTexture _target;
     private Camera _camera;
     private int kernel;
-
     private uint _currentSample = 0;
     private Material _addMaterial;
+    private ComputeBuffer _sphereBuffer;
 
     // MonoBehaviour.OnRenderImage: called after camera finishes rendering, allows modification of camera's final image
     // Documentation: https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnRenderImage.html
@@ -32,6 +35,7 @@ public class RayTracingMaster : MonoBehaviour
                 lightDirection.y, 
                 lightDirection.z, 
                 DirectionalLight.intensity));
+        RayTracingShader.SetBuffer(0, "_Sphere", _sphereBuffer);
     }
 
     private void Awake()
@@ -93,5 +97,21 @@ public class RayTracingMaster : MonoBehaviour
         // Output textures need random write flag enabled
         _target.enableRandomWrite = true;
         _target.Create();
+    }
+
+    private void OnEnable()
+    {
+        _currentSample = 0;
+        SetUpScene();
+    }
+
+    private void OnDisable()
+    {
+        if (_sphereBuffer != null) _sphereBuffer.Release();
+    }
+
+    private void SetUpScene()
+    {
+
     }
 }
