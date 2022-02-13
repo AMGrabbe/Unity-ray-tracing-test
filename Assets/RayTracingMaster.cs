@@ -1,13 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
+using Random = UnityEngine.Random;
 
 public class RayTracingMaster : MonoBehaviour
 {
     public ComputeShader RayTracingShader;
     public Texture2D SkyboxTexture;
     public Light DirectionalLight;
-    public Vector2 SphereRadius;
+    public Vector2 SphereRadius = new Vector2(3.0f, 8.0f);
     public uint SphereMax = 100;
-    public float SperePlacementRadius = 100.0f;
+    public float SpherePlacementRadius = 100.0f;
 
     private RenderTexture _target;
     private Camera _camera;
@@ -35,7 +37,7 @@ public class RayTracingMaster : MonoBehaviour
                 lightDirection.y, 
                 lightDirection.z, 
                 DirectionalLight.intensity));
-        RayTracingShader.SetBuffer(0, "_Sphere", _sphereBuffer);
+        RayTracingShader.SetBuffer(0, "_Spheres", _sphereBuffer);
     }
 
     private void Awake()
@@ -112,6 +114,35 @@ public class RayTracingMaster : MonoBehaviour
 
     private void SetUpScene()
     {
+        List<Sphere> spheres = new List<Sphere>();
 
+        for (int i = 0; i < SphereMax; i++)
+        {
+            var randomPos = Random.insideUnitCircle * SpherePlacementRadius;
+            Sphere sphere = new Sphere{
+                Radius = SphereRadius.x + Random.value * (SphereRadius.y - SphereRadius.x)
+            };
+            sphere.Position = new Vector3 (randomPos.x, sphere.Radius, randomPos.y);
+
+            foreach (Sphere other in spheres)
+            {
+                float minDist = sphere.Radius + other.Radius;
+                // Reject spheres that would intersect with other spheres.
+                if (Vector3.SqrMagnitude(sphere.Position - other.Position) < minDist * minDist) goto SkipSphere;
+            }
+
+            Color color = Random.ColorHSV();
+            var metal = Random.value < 0.5f;
+            sphere.Albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
+            // 4% specularity.
+            sphere.Specular = metal ? new Vector3(color.r, color.g, color.b) : Vector3.one * 0.04f;
+            
+            spheres.Add(sphere);
+
+            SkipSphere: continue;
+        }
+
+        _sphereBuffer = new ComputeBuffer(spheres.Count,  40);
+        _sphereBuffer.SetData(spheres);
     }
 }

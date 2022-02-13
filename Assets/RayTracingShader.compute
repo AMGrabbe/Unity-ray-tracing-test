@@ -22,7 +22,9 @@ struct Sphere
     float3 albedo;
     float3 specular;
 };
+
 StructuredBuffer<Sphere> _Spheres;
+
 struct Ray
 {
     float3 origin;
@@ -119,7 +121,7 @@ RayIntersection Trace(Ray ray)
     uint numSpheres, stride;
     // This is the place where the CPU will store all spheres that comprise the scene.
     _Spheres.GetDimensions(numSpheres, stride);
-    for (uint i = 0; i < numSpheres; i= i++ ) IntersectSphere(ray, bestHit, _Spheres[i]);
+    for (uint i = 0; i < numSpheres; i++) IntersectSphere(ray, bestHit, _Spheres[i]);
     return bestHit;
 }
 
