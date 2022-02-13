@@ -132,12 +132,10 @@ float3 Shade(inout Ray ray, RayIntersection hit, uint3 id)
         // To update the energy, we perform an element-wise multiplication with the specular color of the surface.
         // For example, gold has a specular reflectivity of roughly float3(1.0f, 0.78f, 0.34f), so it will reflect 100% of red light, 78% of green light, but only 34% of blue light, giving the reflection its distinct golden tint.
         // Reflectivity valus: https://blog.selfshadow.com/publications/s2015-shading-course/#course_content
-        float3 specular = float3(0.1f, 0.1f, 0.1f);
-        float3 albedo = float3(0.8f, 0.8f, 0.8f);
-
+      
         ray.origin = hit.position + hit.normal + 0.001f;
         ray.direction = reflect(ray.direction, hit.normal);
-        ray.energy *= specular;
+        ray.energy *= hit.specular;
 
         // Shadow test ray:  Check if something blocks the way to infinity. If thats true no diffuse light will be used.
         // Means: Is something behind the camera that block the light? 
@@ -151,7 +149,7 @@ float3 Shade(inout Ray ray, RayIntersection hit, uint3 id)
         // the dot product is exactly what we are looking for: the cosine of the angle. 
         // The ray and the light are pointing in opposite directions, so for head-on lighting the dot product returns -1 instead of 1. 
         // We need to flip the sign to make up for this. Finally, we saturate this value (i.e. clamp it to [0,1] range) to prevent negative energy.
-        return saturate(dot(hit.normal, _DirectionalLight.xyz) * -1) * _DirectionalLight.w * albedo;
+        return saturate(dot(hit.normal, _DirectionalLight.xyz) * -1) * _DirectionalLight.w * hit.albedo;
     }
     else
     {
