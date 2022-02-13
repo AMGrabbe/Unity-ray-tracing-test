@@ -132,6 +132,7 @@ public class RayTracingMaster : MonoBehaviour
             }
 
             Color color = Random.ColorHSV();
+            Debug.Log(color);
             var metal = Random.value < 0.5f;
             sphere.Albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
             // 4% specularity.
